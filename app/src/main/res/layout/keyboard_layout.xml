@@ -1,13 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:background="@color/white">
     <!-- The layout that wil be shown by the input method-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <!-- fix the ugly -->
+
+        <Button
+            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:layout_margin="0dp"/>
+        <Button
+            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:layout_margin="0dp" />
+    </LinearLayout>
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="50sp"
-        android:id="@+id/txtTesting"
-        android:text="TESTING"
-        android:textAlignment="center" />
+        android:layout_height="50dp"
+        android:text="HELLO I AM APP"/>
+
+    <GridView
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:background="@color/colorPrimaryDark"/>
+
+
+    <android.support.v4.view.ViewPager
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:id="@+id/pagerView"
+        android:layout_gravity="bottom" />
+
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorPrimary">
+        </GridLayout>
 </LinearLayout>
