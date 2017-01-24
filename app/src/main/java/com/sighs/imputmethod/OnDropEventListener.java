@@ -7,6 +7,6 @@ import android.graphics.Rect;
  */
 
 public interface OnDropEventListener {
-    public void onItemDrop(Rect rect);
+    public void onItemDrop(Coordinates c);
 }
 

@@ -1,10 +1,14 @@
 package com.sighs.imputmethod;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -52,17 +56,18 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
     private float xOrigin;
     private float yOrigin;
     private int lastAction = MotionEvent.ACTION_UP;
-    private final RelativeLayout layout;
+    private final ViewGroup layout;
     private ImageView placeHolder;
     private OnDropEventListener listener;
 
     // Constructor
     public DragNDropImageView(Context context, int dragResource, int sitResource
-            ,RelativeLayout layout) {
+            ,ViewGroup layout) {
         super(context);
         this.listener = null;
         this.draggableResource = dragResource;
         this.sittingResource = sitResource;
+        this.setImageBitmap(decodeSampledBitmapFromResource(getResources(), sitResource, 100, 100));
         this.layout = layout;
     }
 
@@ -104,9 +109,9 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
             case (MotionEvent.ACTION_UP):
                 // When you let go of the image trigger the event and send the
                 // image location
-                Rect rect = new Rect();
-                this.getGlobalVisibleRect(rect);
-                this.listener.onItemDrop(rect);
+                Coordinates c = new Coordinates((int)(event.getRawX() + xDelta),
+                        (int) (event.getRawY() + yDelta), this.getWidth(), this.getHeight());
+                if(this.listener != null) this.listener.onItemDrop(c);
                 // Reset the image location
                 view.setX(xOrigin);
                 view.setY(yOrigin);
@@ -118,20 +123,62 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
         return false;
     }
 
+    private Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
+                                                          int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resId, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeResource(res, resId, options);
+    }
+
+    private int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
     private void createPlaceHolder() {
         // Change the image to the one that is draggable
-        this.setImageResource(this.draggableResource);
+        this.setImageBitmap(decodeSampledBitmapFromResource(getResources(),
+                this.draggableResource, 100, 100));
         // Create a new image for the placeholder
         // The placeholder image should be the sitting image
         placeHolder = new ImageView(this.getContext());
-        placeHolder.setImageResource(this.sittingResource);
+        placeHolder.setImageBitmap(decodeSampledBitmapFromResource(getResources(),
+                this.sittingResource, 100, 100));
         placeHolder.setX(xOrigin);
         placeHolder.setY(yOrigin);
         layout.addView(placeHolder);
     }
 
     private void removePlaceHolder() {
-        this.setImageResource(this.sittingResource);
+        this.setImageBitmap(decodeSampledBitmapFromResource(getResources(),
+                this.sittingResource, 100, 100));
         layout.removeView(placeHolder);
     }
 }
