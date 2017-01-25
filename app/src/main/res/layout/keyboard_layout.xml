@@ -28,19 +28,22 @@
         android:layout_height="50dp"
         android:text="HELLO I AM APP"/>
 
-    <GridView
-        android:layout_width="match_parent"
-        android:layout_height="280dp"
-        android:background="@color/colorPrimaryDark"/>
-
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="280dp">
+        <GridView
+            android:id="@+id/cashTable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="auto_fit"
+            android:background="@color/colorPrimaryDark"/>
+    </ScrollView>
 
     <android.support.v4.view.ViewPager
-        android:background="@color/white"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:id="@+id/pagerView"
         android:layout_gravity="bottom" />
-
 
     <GridLayout
         android:layout_width="match_parent"

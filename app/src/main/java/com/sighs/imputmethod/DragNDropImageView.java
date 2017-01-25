@@ -59,6 +59,8 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
     private final ViewGroup layout;
     private ImageView placeHolder;
     private OnDropEventListener listener;
+    private int width = 100;
+    private int height = 100;
 
     // Constructor
     public DragNDropImageView(Context context, int dragResource, int sitResource
@@ -67,7 +69,7 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
         this.listener = null;
         this.draggableResource = dragResource;
         this.sittingResource = sitResource;
-        this.setImageBitmap(decodeSampledBitmapFromResource(getResources(), sitResource, 100, 100));
+        this.setImageBitmap(decodeSampledBitmapFromResource(getResources(), sitResource, this.width, this.height));
         this.layout = layout;
     }
 
@@ -82,6 +84,13 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
     public void setOrigin(float x, float y) {
         this.xOrigin = x;
         this.yOrigin = y;
+    }
+
+    public void setDimensions(int w, int h) {
+        this.width = w;
+        this.height = h;
+        this.setImageBitmap(decodeSampledBitmapFromResource(getResources(), this.sittingResource,
+                this.width, this.height));
     }
 
     // Set the Drop Listener so we can have custom events on eah location
@@ -109,9 +118,9 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
             case (MotionEvent.ACTION_UP):
                 // When you let go of the image trigger the event and send the
                 // image location
-                Coordinates c = new Coordinates((int)(event.getRawX() + xDelta),
-                        (int) (event.getRawY() + yDelta), this.getWidth(), this.getHeight());
-                if(this.listener != null) this.listener.onItemDrop(c);
+                Coordinates c = new Coordinates((int)(event.getX()),
+                        (int) (event.getY()), this.getWidth(), this.getHeight());
+                if(this.listener != null) this.listener.onItemDrop(view, c);
                 // Reset the image location
                 view.setX(xOrigin);
                 view.setY(yOrigin);
@@ -165,12 +174,12 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
     private void createPlaceHolder() {
         // Change the image to the one that is draggable
         this.setImageBitmap(decodeSampledBitmapFromResource(getResources(),
-                this.draggableResource, 100, 100));
+                this.draggableResource, this.width, this.height));
         // Create a new image for the placeholder
         // The placeholder image should be the sitting image
         placeHolder = new ImageView(this.getContext());
         placeHolder.setImageBitmap(decodeSampledBitmapFromResource(getResources(),
-                this.sittingResource, 100, 100));
+                this.sittingResource, this.width, this.height));
         placeHolder.setX(xOrigin);
         placeHolder.setY(yOrigin);
         layout.addView(placeHolder);
@@ -178,7 +187,7 @@ public class DragNDropImageView extends ImageView implements View.OnTouchListene
 
     private void removePlaceHolder() {
         this.setImageBitmap(decodeSampledBitmapFromResource(getResources(),
-                this.sittingResource, 100, 100));
+                this.sittingResource, this.width, this.height));
         layout.removeView(placeHolder);
     }
 }

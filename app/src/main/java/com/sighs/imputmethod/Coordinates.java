@@ -16,8 +16,8 @@ public class Coordinates {
 
 
     public boolean contains(Coordinates c) {
-        return this.x > c.getX() && this.x + this.w < c.getX() + c.getW() &&
-                this.y > c.getY() && this.y + this.h < c.getY() + c.getH();
+        return this.x < c.getX() && this.x + this.w > c.getX() + c.getW() &&
+                this.y < c.getY() && this.y + this.h > c.getY() + c.getH();
     }
 
     public boolean collides(Coordinates c) {
