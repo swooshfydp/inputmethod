@@ -12,38 +12,50 @@
 
         <!-- fix the ugly -->
 
-        <Button
+        <ImageButton
+            android:id="@+id/btnCancel"
+            android:src="@drawable/ic_cancel"
+            android:background="@color/red"
             android:layout_height="match_parent"
             android:layout_width="0dp"
             android:layout_weight="0.5"
             android:layout_margin="0dp"/>
-        <Button
+        <ImageButton
+            android:id="@+id/btnAccept"
+            android:src="@drawable/ic_accept"
+            android:background="@color/green"
             android:layout_height="match_parent"
             android:layout_width="0dp"
             android:layout_weight="0.5"
             android:layout_margin="0dp" />
     </LinearLayout>
     <TextView
+        android:id="@+id/txtValueOutput"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="HELLO I AM APP"/>
+        android:text="HELLO I AM APP"
+        android:textSize="30sp"
+        android:textAlignment="center"
+        android:textStyle="normal|bold"
+        android:background="@color/white"/>
 
     <ScrollView
         android:layout_width="wrap_content"
-        android:layout_height="280dp">
+        android:layout_height="280dp"
+        android:background="@color/colorPrimary">
         <GridView
             android:id="@+id/cashTable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:numColumns="auto_fit"
-            android:background="@color/colorPrimaryDark"/>
+            android:numColumns="auto_fit" />
     </ScrollView>
 
     <android.support.v4.view.ViewPager
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:id="@+id/pagerView"
-        android:layout_gravity="bottom" />
+        android:layout_gravity="bottom"
+        android:background="@color/colorAccent"/>
 
     <GridLayout
         android:layout_width="match_parent"

@@ -5,4 +5,5 @@ package com.sighs.imputmethod;
  */
 
 public interface OnCashTableUpdate {
+    public void OnTotalUpdate(String value);
 }

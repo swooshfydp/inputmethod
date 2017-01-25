@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -28,6 +29,7 @@ public class CashTableGridViewAdapter extends BaseAdapter {
     private Context mContext;
     private HashMap<String, ColumnItem> cashValues = new HashMap<String, ColumnItem>();
     private final Currency[] mValues;
+    private OnCashTableUpdate updateListener = null;
 
     public CashTableGridViewAdapter(Context context, Currency[] values) {
         mContext = context;
@@ -43,7 +45,9 @@ public class CashTableGridViewAdapter extends BaseAdapter {
             value.UpdateStacks(val);
             cashValues.put(key, value);
             value.getAdaptor().notifyDataSetChanged();
-            Log.d(LOGKEY, "Current Total: " + updateTotals());
+            float total = updateTotals();
+            Log.d(LOGKEY, "Current Total: " + total);
+            if(updateListener != null) updateListener.OnTotalUpdate("" + total);
         }
     }
 
@@ -53,6 +57,10 @@ public class CashTableGridViewAdapter extends BaseAdapter {
             total += item.getTotal();
         }
         return total;
+    }
+
+    public void setOnCashTableUpdate(OnCashTableUpdate listener) {
+        this.updateListener = listener;
     }
 
     @Override
@@ -81,7 +89,14 @@ public class CashTableGridViewAdapter extends BaseAdapter {
             gridView = (NonScrollingGridView) view;
         }
         ColumnItem item = (ColumnItem) getItem(i);
+        gridView.setTag(item.currency.getId());
         gridView.setAdapter(item.getAdaptor());
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                updateCashGrid((String) view.getTag(), -1);
+            }
+        });
         return gridView;
     }
 
@@ -141,6 +156,7 @@ public class CashTableGridViewAdapter extends BaseAdapter {
                 }
             }
             this.adaptor.items = list;
+            this.adaptor.notifyDataSetChanged();
         }
 
         public TableListAdaptor getAdaptor() {
@@ -184,5 +200,4 @@ public class CashTableGridViewAdapter extends BaseAdapter {
             items.add(value);
         }
     }
-
 }
