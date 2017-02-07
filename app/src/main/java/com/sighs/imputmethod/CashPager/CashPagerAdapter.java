@@ -1,38 +1,31 @@
 package com.sighs.imputmethod.CashPager;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.sighs.imputmethod.CashTable.CashTable;
+import com.sighs.imputmethod.CashTable.CashTableGridViewAdapter;
+import com.sighs.imputmethod.models.Coordinates;
+import com.sighs.imputmethod.models.Currency;
+import com.sighs.imputmethod.customviews.DragNDropImageView;
+import com.sighs.imputmethod.customviews.OnDropEventListener;
 import com.sighs.imputmethod.R;
 
-import java.util.HashMap;
-
-public class CashPagerAdapter extends PagerAdapter {
-
-    private Context mContext;
-    private LayoutInflater mInflator;
-    private int[] mNotes;
-    private float intY = 0;
-    private float endY = 0;
-    private final static float SWIPE_UP_THRESHOLD = -25;
+public class CashPagerAdapter extends PagerAdapter implements OnDropEventListener, View.OnClickListener {
     private final static String LOGKEY = "SWOOSH_INPUT";
 
-    public CashPagerAdapter(Context context, int[] notes) {
-        mContext = context;
-        mNotes = notes;
-        mInflator = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    private LayoutInflater mInflater;
+    private Currency[] mNotes;
+    private View table;
+    private CashTable tableAdapter;
+
+    public CashPagerAdapter(Context context, Currency[] notes) {
+        this.mNotes = notes;
+        this.mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
@@ -46,40 +39,19 @@ public class CashPagerAdapter extends PagerAdapter {
     }
 
     @Override
-    public Object instantiateItem(ViewGroup container, final int position) {
-        View itemView = mInflator.inflate(R.layout.cashpager_view, container, false);
-
-        ImageView imageView = (ImageView) itemView.findViewById(R.id.currency);
-        imageView.setImageBitmap(decodeSampledBitmapFromResource(container.getResources(),
-                mNotes[position], 100, 100));
-
+    public Object instantiateItem(ViewGroup container, int position) {
+        container.setClipChildren(false);
+        container.setClipToPadding(false);
+        RelativeLayout itemView = (RelativeLayout) this.mInflater.inflate(R.layout.cashpager_view,
+                container, false);
+        DragNDropImageView imageView = new DragNDropImageView(container.getContext(),
+                this.mNotes[position].getBaseImage(), this.mNotes[position].getBaseImage(),
+                container);
+        imageView.setDimensions(200, 200);
+        imageView.setOnClickListener(this);
+        itemView.addView(imageView);
         container.addView(itemView);
-        itemView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        intY = event.getY();
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                        endY = event.getY();
-                        float delta = endY - intY;
-                        Log.d(LOGKEY, "Start: " + intY + ", End: " + endY);
-                        Intent msg = new Intent("cash_drag_event");
-                        msg.putExtra("position", position);
-                        if (delta < SWIPE_UP_THRESHOLD) {
-                            msg.putExtra("amount", 1);
-                        }
-                        if (delta > Math.abs(SWIPE_UP_THRESHOLD)) {
-                            msg.putExtra("amount", -1);
-                        }
-                        LocalBroadcastManager.getInstance(mContext).sendBroadcast(msg);
-                        return true;
-                }
-                return false;
-            }
-        });
-
+        imageView.setTag(mNotes[position].getId());
         return itemView;
     }
 
@@ -88,42 +60,28 @@ public class CashPagerAdapter extends PagerAdapter {
         container.removeView((RelativeLayout) object);
     }
 
-    private static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
-                                                          int reqWidth, int reqHeight) {
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }
-
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
+    @Override
+    public void onItemDrop(View view, Coordinates c) {
+        Coordinates tableCoor = new Coordinates((int) table.getX(), (int) table.getY(),
+                table.getWidth(), table.getHeight());
+        if(this.tableAdapter != null) {
+            if(tableCoor.contains(c)) {
+                int res = (int) view.getTag();
+                tableAdapter.updateCashGrid((String) view.getTag(), 1);
             }
         }
+    }
 
-        return inSampleSize;
+    public void setTable(View table) {
+        this.table = table;
+    }
+
+    public void setTableAdapter(CashTable adapter) {
+        this.tableAdapter = adapter;
+    }
+
+    @Override
+    public void onClick(View view) {
+        tableAdapter.updateCashGrid((String) view.getTag(), 1);
     }
 }
