@@ -1,30 +1,19 @@
 package com.sighs.imputmethod.CashPager;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import com.sighs.imputmethod.CashTableGridViewAdapter;
-import com.sighs.imputmethod.Coordinates;
-import com.sighs.imputmethod.Currency;
-import com.sighs.imputmethod.DragNDropImageView;
-import com.sighs.imputmethod.OnDropEventListener;
+import com.sighs.imputmethod.CashTable.CashTable;
+import com.sighs.imputmethod.CashTable.CashTableGridViewAdapter;
+import com.sighs.imputmethod.models.Coordinates;
+import com.sighs.imputmethod.models.Currency;
+import com.sighs.imputmethod.customviews.DragNDropImageView;
+import com.sighs.imputmethod.customviews.OnDropEventListener;
 import com.sighs.imputmethod.R;
-
-import java.util.HashMap;
 
 public class CashPagerAdapter extends PagerAdapter implements OnDropEventListener, View.OnClickListener {
     private final static String LOGKEY = "SWOOSH_INPUT";
@@ -32,7 +21,7 @@ public class CashPagerAdapter extends PagerAdapter implements OnDropEventListene
     private LayoutInflater mInflater;
     private Currency[] mNotes;
     private View table;
-    private CashTableGridViewAdapter tableAdapter;
+    private CashTable tableAdapter;
 
     public CashPagerAdapter(Context context, Currency[] notes) {
         this.mNotes = notes;
@@ -51,11 +40,14 @@ public class CashPagerAdapter extends PagerAdapter implements OnDropEventListene
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
+        container.setClipChildren(false);
+        container.setClipToPadding(false);
         RelativeLayout itemView = (RelativeLayout) this.mInflater.inflate(R.layout.cashpager_view,
                 container, false);
         DragNDropImageView imageView = new DragNDropImageView(container.getContext(),
                 this.mNotes[position].getBaseImage(), this.mNotes[position].getBaseImage(),
                 container);
+        imageView.setDimensions(200, 200);
         imageView.setOnClickListener(this);
         itemView.addView(imageView);
         container.addView(itemView);
@@ -84,7 +76,7 @@ public class CashPagerAdapter extends PagerAdapter implements OnDropEventListene
         this.table = table;
     }
 
-    public void setTableAdapter(CashTableGridViewAdapter adapter) {
+    public void setTableAdapter(CashTable adapter) {
         this.tableAdapter = adapter;
     }
 
