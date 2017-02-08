@@ -1,8 +1,12 @@
 package com.sighs.imputmethod;
 
+import android.content.Context;
+import android.graphics.PixelFormat;
 import android.inputmethodservice.InputMethodService;
 import android.support.v4.view.ViewPager;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -15,6 +19,7 @@ import com.sighs.imputmethod.CashPager.CashPagerAdapter;
 import com.sighs.imputmethod.CashPager.PagerContainer;
 import com.sighs.imputmethod.CashTable.CashTable;
 import com.sighs.imputmethod.CashTable.OnCashTableUpdate;
+import com.sighs.imputmethod.Overlay.AnalyticsTouchListener;
 import com.sighs.imputmethod.models.Currency;
 
 /**
@@ -33,6 +38,7 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
     private ImageButton rightButton;
     private FrameLayout cashTableFrame;
     PagerContainer mContainer;
+    private WindowManager mWindowManager;
 
 
     @Override
@@ -41,6 +47,20 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout, null);
         // Define the currency
         Currency[] notes = Currency.loadFromJson("tza.json", layout.getContext());
+        // Tracking user touch points of the entire inputmethod
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                1, 1,
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.BOTTOM;
+        mWindowManager = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
+        LinearLayout dummyView = new LinearLayout(this);
+        dummyView.setOnTouchListener(new AnalyticsTouchListener(this));
+        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+        wm.addView(dummyView, params);
         // TODO Layout top level functionality
 
         // CashTable Setup
