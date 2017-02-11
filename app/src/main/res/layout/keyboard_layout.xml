@@ -5,13 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
+
     <!-- The layout that wil be shown by the input method-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="horizontal">
-
-        <!-- fix the ugly -->
 
         <ImageButton
             android:id="@+id/btnCancel"
@@ -34,7 +33,7 @@
         android:id="@+id/txtValueOutput"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="HELLO I AM APP"
+        android:text="0"
         android:textSize="30sp"
         android:textAlignment="center"
         android:textStyle="normal|bold"
@@ -42,7 +41,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="280dp"
+        android:layout_height="242dp"
         android:background="@color/cashTableBackground">
         <ScrollView
             android:layout_width="match_parent"
@@ -69,12 +68,19 @@
             android:src="@drawable/ic_delete"/>
     </FrameLayout>
 
-    <android.support.v4.view.ViewPager
+    <com.sighs.imputmethod.CashPager.PagerContainer
+        android:id="@+id/pager_container"
         android:layout_width="match_parent"
-        android:id="@+id/pagerView"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:layout_height="92dp" />
+        android:layout_height="wrap_content"
+        android:background="@color/white">
+
+        <android.support.v4.view.ViewPager
+            android:layout_width="200dp"
+            android:id="@+id/pagerView"
+            android:layout_gravity="center"
+            android:background="@color/white"
+            android:layout_height="120dp" />
+    </com.sighs.imputmethod.CashPager.PagerContainer>
 
     <LinearLayout
         android:layout_width="match_parent"

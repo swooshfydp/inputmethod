@@ -11,6 +11,7 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.sighs.imputmethod.CashPager.CashPagerAdapter;
+import com.sighs.imputmethod.CashPager.PagerContainer;
 import com.sighs.imputmethod.CashTable.CashTable;
 import com.sighs.imputmethod.CashTable.CashTableGridViewAdapter;
 import com.sighs.imputmethod.CashTable.OnCashTableUpdate;
@@ -22,7 +23,7 @@ import com.sighs.imputmethod.models.Currency;
 
 public class ServiceInputMethod extends InputMethodService implements OnCashTableUpdate {
     private CashPagerAdapter cashPagerAdapter;
-    private ViewPager pagerView;
+    private ViewPager pagerView=null;
     private TableLayout cashTable;
     private CashTable cashTableAdapter;
     private TextView cashValueOutput;
@@ -31,6 +32,8 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
     private ImageButton clearButton;
     private ImageButton leftButton;
     private ImageButton rightButton;
+    PagerContainer mContainer;
+
 
     @Override
     public View onCreateInputView() {
@@ -49,6 +52,10 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         cashPagerAdapter.setTable(cashTable);
         pagerView = (ViewPager) layout.findViewById(R.id.pagerView);
         pagerView.setAdapter(cashPagerAdapter);
+        pagerView.setOffscreenPageLimit(cashPagerAdapter.getCount());
+        pagerView.setClipChildren(false);
+
+
         // Set the Text Output
         cashValueOutput = (TextView) layout.findViewById(R.id.txtValueOutput);
         // Set the Buttons
