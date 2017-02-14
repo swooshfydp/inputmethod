@@ -3,9 +3,7 @@
     android:insetRight="-2dp"
     android:insetBottom="-2dp"
     android:insetLeft="-2dp">
-
-    <shape android:shape="rectangle">
-        <stroke android:width="2dp" android:color="#FF0000" />
-    </shape>
-
+        <shape android:shape="rectangle">
+            <stroke android:width="2dp" android:color="@color/grey" />
+        </shape>
 </inset>
