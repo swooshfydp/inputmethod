@@ -6,14 +6,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
-
-import static android.content.Context.MODE_APPEND;
 
 /**
  * Created by stuart on 2/7/17.
