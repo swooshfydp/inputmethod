@@ -34,18 +34,10 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
 
     @Override
     public View onCreateInputView() {
-        // TODO: Load this from file
-        // Define the currency of the
-        // Add bills resources to the new int[]
-        Currency[] notes = {
-                new Currency ("FiveHundred", 500.0f, new int[]{R.drawable.bill_500, R.drawable.bill_500x2, R.drawable.bill_500x3, R.drawable.bill_500x4, R.drawable.bill_500x5}),
-                new Currency ("OneThousand", 1000.0f, new int[]{R.drawable.bill_1000, R.drawable.bill_1000x2, R.drawable.bill_1000x3, R.drawable.bill_1000x4, R.drawable.bill_1000x5}),
-                new Currency ("TwoThousand", 2000.0f, new int[]{R.drawable.bill_2000, R.drawable.bill_2000x2, R.drawable.bill_2000x3, R.drawable.bill_2000x4, R.drawable.bill_2000x5}),
-                new Currency ("FiveThousand", 5000.0f, new int[]{R.drawable.bill_5000, R.drawable.bill_5000x2, R.drawable.bill_5000x3, R.drawable.bill_5000x4, R.drawable.bill_5000x5}),
-                new Currency ("TenThousand", 10000.0f, new int[]{R.drawable.bill_10000, R.drawable.bill_10000x2, R.drawable.bill_10000x3, R.drawable.bill_10000x4, R.drawable.bill_10000x5})
-        };
-
+        // Get the top level layout
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout, null);
+        // Define the currency
+        Currency[] notes = Currency.loadFromJson("tza.json", layout.getContext());
         // TODO Layout top level functionality
         // CashTable Setup
         cashTable = (TableLayout) layout.findViewById(R.id.cashTable);

@@ -1,0 +1,7 @@
+[
+  {"id": "FiveHundred", "value": 500.0, "imageRes": ["bill_500", "bill_500x2", "bill_500x3", "bill_500x4", "bill_500x5"]},
+  {"id": "OneThousand", "value": 1000.0, "imageRes": ["bill_1000", "bill_1000x2", "bill_1000x3", "bill_1000x4", "bill_1000x5"]},
+  {"id": "TwoThousand", "value": 2000.0, "imageRes": ["bill_2000", "bill_2000x2", "bill_2000x3", "bill_2000x4", "bill_2000x5"]},
+  {"id": "FiveThousand", "value": 5000.0, "imageRes": ["bill_5000", "bill_5000x2", "bill_5000x3", "bill_5000x4", "bill_5000x5"]},
+  {"id": "TenThousand", "value": 10000.0, "imageRes": ["bill_10000", "bill_10000x2", "bill_10000x3", "bill_10000x4", "bill_10000x5"]}
+]

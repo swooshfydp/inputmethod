@@ -1,0 +1,13 @@
+[
+  {
+    "id": "FiveHundred",
+    "value": 500.0,
+    "imageRes": [
+      "bill_500",
+      "bill_500x2",
+      "bill_500x3",
+      "bill_500x4",
+      "bill_500x5"
+    ]
+  }
+]
