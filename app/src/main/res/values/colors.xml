@@ -9,4 +9,6 @@
     <color name="blue">#0000FF</color>
     <color name="green">#00FF00</color>
     <color name="cashTableBackground">#FEEADA</color>
+    <color name="grey">#7e7e7e</color>
+    <color name="lightGrey">#ececec</color>
 </resources>
