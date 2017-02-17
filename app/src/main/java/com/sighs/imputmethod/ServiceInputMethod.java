@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.inputmethodservice.InputMethodService;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -39,12 +40,18 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
     private FrameLayout cashTableFrame;
     PagerContainer mContainer;
     private WindowManager mWindowManager;
+    private InputConnection lastInputConntection = null;
 
 
     @Override
     public View onCreateInputView() {
+        Log.d("SWOSH-InputConnect",
+                String.valueOf(getCurrentInputConnection().equals(lastInputConntection)));
+        lastInputConntection = getCurrentInputConnection();
+        Log.d("SWOSH-InputConnect", lastInputConntection.toString());
         // Get the top level layout
-        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout, null);
+        LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout,
+                null);
         // Define the currency
         Currency[] notes = Currency.loadFromJson("tza.json", layout.getContext());
         // Tracking user touch points of the entire inputmethod
