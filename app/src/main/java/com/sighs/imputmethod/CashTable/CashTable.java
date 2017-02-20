@@ -74,6 +74,28 @@ public class CashTable implements View.OnTouchListener, Runnable {
         return this.table;
     }
 
+    public String getCurrencyCounts() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(updateTotals());
+        builder.append("|");
+        for(String k : cashValues.keySet()) {
+            builder.append(k);
+            builder.append(":");
+            builder.append(cashValues.get(k).count);
+            builder.append(";");
+        }
+        // builder.append("\n");
+        return builder.toString();
+    }
+
+    public void loadCurrencyCount(String record) {
+        String counts = record.split("|")[1];
+        String[] records = counts.split(";");
+        for(String rec : records) {
+            cashValues.get(rec.split(":")[0]).setCount(Integer.parseInt(rec.split(":")[1]));
+        }
+    }
+
     public void updateCashGrid(String key, int val) {
         if (cashValues.containsKey(key)) {
             ColumnItem value = cashValues.get(key);
@@ -194,12 +216,13 @@ public class CashTable implements View.OnTouchListener, Runnable {
         private int count = 0;
         private ListView view;
 
-
         public ColumnItem(Context context, Currency currency) {
             this.currency = currency;
             this.adaptor = new CashTable.TableListAdaptor(context);
-
         }
+
+        public int getCount() {return this.count;}
+        public void setCount(int c) {this.count = c;}
 
         public float getTotal() {
             return this.currency.getValue() * this.count;

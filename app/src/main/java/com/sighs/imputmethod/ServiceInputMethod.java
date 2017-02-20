@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -22,6 +23,8 @@ import com.sighs.imputmethod.CashTable.CashTable;
 import com.sighs.imputmethod.CashTable.OnCashTableUpdate;
 import com.sighs.imputmethod.Overlay.AnalyticsTouchListener;
 import com.sighs.imputmethod.models.Currency;
+
+import java.util.HashMap;
 
 /**
  * Created by stuart on 1/16/17.
@@ -41,14 +44,25 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
     PagerContainer mContainer;
     private WindowManager mWindowManager;
     private InputConnection lastInputConntection = null;
+    private HashMap<Integer, String> history = new HashMap<Integer, String>();
 
 
     @Override
-    public View onCreateInputView() {
+    public void onStartInputView(EditorInfo info, boolean restarting) {
         Log.d("SWOSH-InputConnect",
                 String.valueOf(getCurrentInputConnection().equals(lastInputConntection)));
         lastInputConntection = getCurrentInputConnection();
         Log.d("SWOSH-InputConnect", lastInputConntection.toString());
+        Log.d("SWOSH-InputConnect", String.valueOf(lastInputConntection.hashCode()));
+        if(!history.containsKey(lastInputConntection.hashCode())) {
+
+        }
+        super.onStartInputView(info, restarting);
+    }
+
+    @Override
+    public View onCreateInputView() {
+        Log.d("SWOSH-IMS-CreateView", "Creating Input");
         // Get the top level layout
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout,
                 null);
@@ -101,6 +115,7 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
             public void onClick(View view) {
                 // Close the keyboard and undo the last change
                 outputResults("0.00");
+                cashTableAdapter.clearTable();
                 close();
             }
         });
