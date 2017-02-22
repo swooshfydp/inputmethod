@@ -48,6 +48,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
         this.dragImage = (ImageView) layout.findViewById(R.id.dragImage);
         this.scrollView = (LockableHorizontalScrollView) layout.findViewById(R.id.horizontalScroll);
         this.trashIcon = layout.findViewById(R.id.btnClear);
+        this.trashIcon.setPadding(10, 10, 10, 10);
         this.trashIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -115,6 +116,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
         this.dragImage.setX(deltaX - Math.max(150, this.dragImage.getWidth())/2);
         this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
         this.cashValues.get(this.selectedKey).getView().setBackgroundColor(R.color.blue);
+        this.trashIcon.setBackgroundColor(R.color.blue);
         this.dragImage.setVisibility(View.VISIBLE);
     }
 
@@ -141,6 +143,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
                     this.scrollView.setScrollingEnabled(true);
                     this.dragImage.setVisibility(View.GONE);
                     this.cashValues.get(this.selectedKey).getView().setBackgroundColor(0x00000000);
+                    this.trashIcon.setBackgroundColor(0x00000000);
                     return true;
                 }
                 this.deltaX = newX;
@@ -153,6 +156,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
                 this.scrollView.setScrollingEnabled(true);
                 this.dragImage.setVisibility(View.GONE);
                 this.cashValues.get(this.selectedKey).getView().setBackgroundColor(0x00000000);
+                this.trashIcon.setBackgroundColor(0x00000000);
                 if (isViewOverlapping(this.dragImage, this.trashIcon)) {
                     updateCashGrid(key, -1);
                 }
