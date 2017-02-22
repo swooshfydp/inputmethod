@@ -40,14 +40,12 @@
         android:background="@color/white"/>
 
     <FrameLayout
+        android:id="@+id/cashTableFrame"
         android:layout_width="match_parent"
         android:layout_height="242dp"
         android:background="@color/cashTableBackground">
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true">
-        <HorizontalScrollView
+        <com.sighs.imputmethod.customviews.LockableHorizontalScrollView
+            android:id="@+id/horizontalScroll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true">
@@ -57,8 +55,7 @@
                 android:layout_height="wrap_content">
 
             </TableLayout>
-        </HorizontalScrollView>
-        </ScrollView>
+        </com.sighs.imputmethod.customviews.LockableHorizontalScrollView>
         <ImageButton
             android:id="@+id/btnClear"
             android:layout_width="wrap_content"
@@ -66,6 +63,12 @@
             android:alpha="0.25"
             android:layout_gravity="bottom|right"
             android:src="@drawable/ic_delete"/>
+        <ImageView
+            android:id="@+id/dragImage"
+            android:visibility="gone"
+            android:scaleType="fitCenter"
+            android:layout_width="100dp"
+            android:layout_height="70dp" />
     </FrameLayout>
 
     <com.sighs.imputmethod.CashPager.PagerContainer

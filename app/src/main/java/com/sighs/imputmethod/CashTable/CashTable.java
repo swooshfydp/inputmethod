@@ -1,17 +1,25 @@
 package com.sighs.imputmethod.CashTable;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
+import com.sighs.imputmethod.R;
+import com.sighs.imputmethod.customviews.LockableHorizontalScrollView;
 import com.sighs.imputmethod.models.Currency;
 
 import java.util.ArrayList;
@@ -21,49 +29,48 @@ import java.util.HashMap;
  * Created by stuart on 2/6/17.
  */
 
-public class CashTable {
+public class CashTable implements View.OnTouchListener, Runnable {
+    private final static int MINDISTANCE = 10;
     private final static String LOGKEY = "SWOOSH_INPUT";
-    private final TableLayout table;
-    private HashMap<String, CashTable.ColumnItem> cashValues = new HashMap<String, CashTable.ColumnItem>();
+    private final Handler handler = new Handler();
+    private int lastTouch = MotionEvent.ACTION_UP;
+    private HashMap<String, ColumnItem> cashValues = new HashMap<>();
     private OnCashTableUpdate updateListener = null;
-    private ArrayList<TableRow> rows;
-    private TableRow tableRow;
+    private TableLayout table;
+    private ImageView dragImage;
+    private View trashIcon;
+    private LockableHorizontalScrollView scrollView;
+    private float deltaX, deltaY;
+    private String selectedKey;
 
-    public CashTable(TableLayout table, Currency[] currencies) {
-        this.table = table;
-        this.tableRow = new TableRow(table.getContext());
+    public CashTable(FrameLayout layout, Currency[] currencies) {
+        this.table = (TableLayout) layout.findViewById(R.id.cashTable);
+        this.dragImage = (ImageView) layout.findViewById(R.id.dragImage);
+        this.scrollView = (LockableHorizontalScrollView) layout.findViewById(R.id.horizontalScroll);
+        this.trashIcon = layout.findViewById(R.id.btnClear);
+        this.trashIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clearTable();
+            }
+        });
+        TableRow tableRow = new TableRow(table.getContext());
         for(Currency currency: currencies) {
             ColumnItem item = new CashTable.ColumnItem(table.getContext(), currency);
-            cashValues.put(currency.getId(), item);
             ListView list = new ListView(this.table.getContext());
+            list.setPadding(10, 10, 10, 10);
             list.setAdapter(item.getAdaptor());
             list.setTag(currency.getId());
-            list.setOnTouchListener(new View.OnTouchListener() {
-                private int lastTouch = MotionEvent.ACTION_UP;
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    switch (motionEvent.getAction()) {
-                        case (MotionEvent.ACTION_DOWN):
-                            lastTouch = MotionEvent.ACTION_DOWN;
-                            return true;
-                        case (MotionEvent.ACTION_UP):
-                            if (lastTouch == MotionEvent.ACTION_DOWN) {
-                                updateCashGrid((String) view.getTag(), -1);
-                            }
-                            lastTouch = MotionEvent.ACTION_UP;
-                            return true;
-                        default:
-                            lastTouch = motionEvent.getAction();
-                            return false;
-                    }
-                    // return false;
-                }
-            });
-            this.tableRow.addView(list);
+            list.setOnTouchListener(this);
+            tableRow.addView(list);
+            item.setView(list);
+            cashValues.put(currency.getId(), item);
         }
-        this.table.addView(this.tableRow);
-        // this.table.setHorizontalScrollBarEnabled(true);
-        // this.table.setVerticalScrollBarEnabled(true);
+        this.table.addView(tableRow);
+    }
+
+    public TableLayout getTable() {
+        return this.table;
     }
 
     public void updateCashGrid(String key, int val) {
@@ -102,11 +109,86 @@ public class CashTable {
         this.updateListener = updateListener;
     }
 
+    @Override
+    public void run() {
+        this.scrollView.setScrollingEnabled(false);
+        this.dragImage.setX(deltaX - Math.max(150, this.dragImage.getWidth())/2);
+        this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
+        this.cashValues.get(this.selectedKey).getView().setBackgroundColor(R.color.blue);
+        this.dragImage.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        String key = (String) view.getTag();
+        switch (motionEvent.getAction()) {
+            case (MotionEvent.ACTION_DOWN):
+                this.lastTouch = MotionEvent.ACTION_DOWN;
+                this.selectedKey = key;
+                this.dragImage.setImageResource(cashValues.get(key).currency.getBaseImage());
+                this.handler.postDelayed(this, 1000);
+                this.deltaX = motionEvent.getRawX();
+                this.deltaY = motionEvent.getY();
+                this.dragImage.setX(deltaX - Math.max(150, this.dragImage.getWidth())/2);
+                this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
+                break;
+            case (MotionEvent.ACTION_MOVE):
+            case (MotionEvent.ACTION_CANCEL):
+                lastTouch = MotionEvent.ACTION_MOVE;
+                float newX = motionEvent.getRawX();
+                if(Math.abs(this.deltaX - newX) > MINDISTANCE && this.dragImage.getVisibility() == View.GONE) {
+                    this.handler.removeCallbacks(this);
+                    this.scrollView.setScrollingEnabled(true);
+                    this.dragImage.setVisibility(View.GONE);
+                    this.cashValues.get(this.selectedKey).getView().setBackgroundColor(0x00000000);
+                    return true;
+                }
+                this.deltaX = newX;
+                this.deltaY = motionEvent.getY();
+                this.dragImage.setX(deltaX - Math.max(150, this.dragImage.getWidth())/2);
+                this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
+                break;
+            case (MotionEvent.ACTION_UP):
+                this.handler.removeCallbacks(this);
+                this.scrollView.setScrollingEnabled(true);
+                this.dragImage.setVisibility(View.GONE);
+                this.cashValues.get(this.selectedKey).getView().setBackgroundColor(0x00000000);
+                if (isViewOverlapping(this.dragImage, this.trashIcon)) {
+                    updateCashGrid(key, -1);
+                }
+                lastTouch = MotionEvent.ACTION_UP;
+                return true;
+        }
+        Log.d(LOGKEY, "Raw (" + motionEvent.getRawX() + ", " + motionEvent.getRawY() + ") - Normal (" +
+                motionEvent.getX() + ", " + motionEvent.getY() + ") - Size (" +
+                this.dragImage.getWidth() + ", " + this.dragImage.getHeight() + ") - Coords. (" +
+                this.dragImage.getX() + ", " + this.dragImage.getY() + ") - Action: " + lastTouch);
+        return false;
+    }
+
+    // Determine if two vies are overlapping
+    // Specifically made for for the trash button
+    private boolean isViewOverlapping(View firstView, View secondView) {
+        int[] firstPosition = new int[2];
+        int[] secondPosition = new int[2];
+
+        firstView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        firstView.getLocationOnScreen(firstPosition);
+        secondView.getLocationOnScreen(secondPosition);
+
+        int r = firstView.getWidth() + firstPosition[0];
+        int l = secondPosition[0];
+        int u = firstView.getHeight() + firstPosition[1];
+        int d = secondPosition[1];
+        return (r >= l && (r != 0 && l != 0)) && (u >= d && (u != 0 && d != 0));
+    }
+
     class ColumnItem {
         private CashTable.TableListAdaptor adaptor;
         private Currency currency;
         private int StackCount = 5;
         private int count = 0;
+        private ListView view;
 
 
         public ColumnItem(Context context, Currency currency) {
@@ -149,6 +231,14 @@ public class CashTable {
             this.adaptor.items = list;
             this.adaptor.notifyDataSetChanged();
             this.count = 0;
+        }
+
+        public ListView getView() {
+            return view;
+        }
+
+        public void setView(ListView view) {
+            this.view = view;
         }
     }
 

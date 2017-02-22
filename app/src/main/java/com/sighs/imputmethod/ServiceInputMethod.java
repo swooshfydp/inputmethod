@@ -4,8 +4,9 @@ import android.inputmethodservice.InputMethodService;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
-import android.widget.GridView;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -13,7 +14,6 @@ import android.widget.TextView;
 import com.sighs.imputmethod.CashPager.CashPagerAdapter;
 import com.sighs.imputmethod.CashPager.PagerContainer;
 import com.sighs.imputmethod.CashTable.CashTable;
-import com.sighs.imputmethod.CashTable.CashTableGridViewAdapter;
 import com.sighs.imputmethod.CashTable.OnCashTableUpdate;
 import com.sighs.imputmethod.models.Currency;
 
@@ -24,7 +24,6 @@ import com.sighs.imputmethod.models.Currency;
 public class ServiceInputMethod extends InputMethodService implements OnCashTableUpdate {
     private CashPagerAdapter cashPagerAdapter;
     private ViewPager pagerView=null;
-    private TableLayout cashTable;
     private CashTable cashTableAdapter;
     private TextView cashValueOutput;
     private ImageButton acceptButton;
@@ -32,6 +31,7 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
     private ImageButton clearButton;
     private ImageButton leftButton;
     private ImageButton rightButton;
+    private FrameLayout cashTableFrame;
     PagerContainer mContainer;
 
 
@@ -42,14 +42,15 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         // Define the currency
         Currency[] notes = Currency.loadFromJson("tza.json", layout.getContext());
         // TODO Layout top level functionality
+
         // CashTable Setup
-        cashTable = (TableLayout) layout.findViewById(R.id.cashTable);
-        cashTableAdapter = new CashTable(cashTable, notes);
+        cashTableFrame = (FrameLayout) layout.findViewById(R.id.cashTableFrame);
+        cashTableAdapter = new CashTable(cashTableFrame, notes);
         cashTableAdapter.setUpdateListener(this);
         // Set the Cash Pager
         cashPagerAdapter = new CashPagerAdapter(this,notes);
         cashPagerAdapter.setTableAdapter(cashTableAdapter);
-        cashPagerAdapter.setTable(cashTable);
+        cashPagerAdapter.setTable(cashTableAdapter.getTable());
         pagerView = (ViewPager) layout.findViewById(R.id.pagerView);
         pagerView.setAdapter(cashPagerAdapter);
         pagerView.setOffscreenPageLimit(cashPagerAdapter.getCount());
@@ -74,13 +75,6 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
                 // Close the keyboard and undo the last change
                 outputResults("0.00");
                 close();
-            }
-        });
-        clearButton = (ImageButton) layout.findViewById(R.id.btnClear);
-        clearButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                cashTableAdapter.clearTable();
             }
         });
         leftButton = (ImageButton) layout.findViewById(R.id.btnLeftArrow);
