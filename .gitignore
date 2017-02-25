@@ -12,5 +12,4 @@
 /captures
 .externalNativeBuild
 app/libs/
-app/src/main/java/com/sighs/imputmethod/utils/
 gen/

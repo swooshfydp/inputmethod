@@ -1,6 +1,7 @@
 package com.sighs.imputmethod.CashPager;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -8,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.sighs.imputmethod.Overlay.TouchAnalytics;
 import com.sighs.imputmethod.R;
 
 /**
@@ -17,6 +19,7 @@ public class PagerContainer extends FrameLayout implements ViewPager.OnPageChang
 
     private ViewPager mPager;
     boolean mNeedsRedraw = false;
+    private SharedPreferences settings;
 
     public PagerContainer(Context context) {
         super(context);
@@ -90,7 +93,11 @@ public class PagerContainer extends FrameLayout implements ViewPager.OnPageChang
     }
 
     @Override
-    public void onPageSelected(int position) { }
+    public void onPageSelected(int position) {
+        settings = this.getContext().getSharedPreferences("cashkeyboard", Context.MODE_APPEND);
+        TouchAnalytics.WriteMessage(this.getContext(), "PageChanged",
+                "Current Position: " + position);
+    }
 
     @Override
     public void onPageScrollStateChanged(int state) {
