@@ -13,9 +13,7 @@ import java.io.FileOutputStream;
  */
 
 public class AnalyticsTouchListener implements View.OnTouchListener {
-    private final static String LOGKEY = "SWOOSH_INPUT";
     private final Context mContext;
-    private FileOutputStream fOut;
 
     public AnalyticsTouchListener(Context mContext) {
         this.mContext = mContext;
@@ -23,23 +21,10 @@ public class AnalyticsTouchListener implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        StringBuilder logLine = new StringBuilder();
-        logLine.append(DateFormat.format("yyyyy-mm-dd hh:mm:ss", System.currentTimeMillis()));
-        logLine.append("- x: ");
-        logLine.append(motionEvent.getX());
-        logLine.append(" , y: ");
-        logLine.append(motionEvent.getY());
-        logLine.append(" => ");
-        logLine.append(motionEvent.getAction());
-        Log.d(LOGKEY ,logLine.toString());
-        try {
-            fOut = mContext.openFileOutput("touchLog.txt", Context.MODE_APPEND);
-            logLine.append("\n");
-            fOut.write(logLine.toString().getBytes());
-            fOut.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String file = mContext.getSharedPreferences("cashinput", Context.MODE_APPEND)
+                .getString(TouchAnalytics.PARTICIPANTKEY, "annon");
+        file += ".txt";
+        TouchAnalytics.WriteEvent(mContext, motionEvent);
         return true;
     }
 }

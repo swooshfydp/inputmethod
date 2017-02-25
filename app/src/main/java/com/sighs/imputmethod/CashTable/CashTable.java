@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 
 public class CashTable implements View.OnTouchListener, Runnable {
     private final static int MINDISTANCE = 10;
+    private final static int HOLDWAIT = 500;
     private final static String LOGKEY = "SWOOSH_INPUT";
     private final Handler handler = new Handler();
     private int lastTouch = MotionEvent.ACTION_UP;
@@ -41,9 +43,13 @@ public class CashTable implements View.OnTouchListener, Runnable {
     private View trashIcon;
     private LockableHorizontalScrollView scrollView;
     private float deltaX, deltaY;
+    private float WIDTHSCALER;
     private String selectedKey;
 
-    public CashTable(FrameLayout layout, Currency[] currencies) {
+    public CashTable(FrameLayout layout, Currency[] currencies, int screenWidth) {
+        // Get Screen width
+
+        WIDTHSCALER = screenWidth / 480;
         this.table = (TableLayout) layout.findViewById(R.id.cashTable);
         this.dragImage = (ImageView) layout.findViewById(R.id.dragImage);
         this.scrollView = (LockableHorizontalScrollView) layout.findViewById(R.id.horizontalScroll);
@@ -76,7 +82,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
 
     public String getCurrencyCounts() {
         StringBuilder builder = new StringBuilder();
-        builder.append(updateTotals());
+        builder.append(String.format("%.2f", (float) updateTotals()));
         builder.append("|");
         for(String k : cashValues.keySet()) {
             builder.append(k);
@@ -88,12 +94,23 @@ public class CashTable implements View.OnTouchListener, Runnable {
         return builder.toString();
     }
 
-    public void loadCurrencyCount(String record) {
-        String counts = record.split("|")[1];
+    public void loadCurrencyCount(String record, String lastValue) {
+        if (record.equals("")) {
+            clearTable();
+            return;
+        }
+        if(!record.split("\\|")[0].equals(lastValue)) {
+            clearTable();
+            return;
+        }
+        String counts = record.split("\\|")[1];
         String[] records = counts.split(";");
         for(String rec : records) {
             cashValues.get(rec.split(":")[0]).setCount(Integer.parseInt(rec.split(":")[1]));
+            cashValues.get(rec.split(":")[0]).UpdateStack();
         }
+        float total = updateTotals();
+        updateListener.OnTotalUpdate(String.format("%.2f", total));
     }
 
     public void updateCashGrid(String key, int val) {
@@ -137,8 +154,8 @@ public class CashTable implements View.OnTouchListener, Runnable {
         this.scrollView.setScrollingEnabled(false);
         this.dragImage.setX(deltaX - Math.max(150, this.dragImage.getWidth())/2);
         this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
-        this.cashValues.get(this.selectedKey).getView().setBackgroundColor(R.color.blue);
-        this.trashIcon.setBackgroundColor(R.color.blue);
+        this.cashValues.get(this.selectedKey).getView().setBackgroundColor(R.color.red);
+        this.trashIcon.setBackgroundColor(R.color.red);
         this.dragImage.setVisibility(View.VISIBLE);
     }
 
@@ -150,14 +167,13 @@ public class CashTable implements View.OnTouchListener, Runnable {
                 this.lastTouch = MotionEvent.ACTION_DOWN;
                 this.selectedKey = key;
                 this.dragImage.setImageResource(cashValues.get(key).currency.getBaseImage());
-                this.handler.postDelayed(this, 1000);
+                this.handler.postDelayed(this, HOLDWAIT);
                 this.deltaX = motionEvent.getRawX();
                 this.deltaY = motionEvent.getY();
                 this.dragImage.setX(deltaX - Math.max(150, this.dragImage.getWidth())/2);
                 this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
                 break;
             case (MotionEvent.ACTION_MOVE):
-            case (MotionEvent.ACTION_CANCEL):
                 lastTouch = MotionEvent.ACTION_MOVE;
                 float newX = motionEvent.getRawX();
                 if(Math.abs(this.deltaX - newX) > MINDISTANCE && this.dragImage.getVisibility() == View.GONE) {
@@ -174,6 +190,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
                 this.dragImage.setY(deltaY - Math.max(105, this.dragImage.getHeight())/2);
                 break;
             case (MotionEvent.ACTION_UP):
+            case (MotionEvent.ACTION_CANCEL):
                 this.handler.removeCallbacks(this);
                 this.scrollView.setScrollingEnabled(true);
                 this.dragImage.setVisibility(View.GONE);
@@ -249,6 +266,26 @@ public class CashTable implements View.OnTouchListener, Runnable {
             this.adaptor.notifyDataSetChanged();
         }
 
+        public void UpdateStack() {
+            ArrayList list = new ArrayList<Integer>();
+            int stack = this.count;
+            if (this.count <= this.StackCount) {
+                while (stack > 0) {
+                    list.add(this.currency.getBaseImage());
+                    stack--;
+                }
+            } else {
+                while (stack > 0) {
+                    int rem = this.StackCount;
+                    if (stack < this.StackCount) rem = stack % this.StackCount;
+                    list.add(this.currency.getImageSrc(rem));
+                    stack -= this.StackCount;
+                }
+            }
+            this.adaptor.items = list;
+            this.adaptor.notifyDataSetChanged();
+        }
+
         public CashTable.TableListAdaptor getAdaptor() {
             return adaptor;
         }
@@ -298,10 +335,8 @@ public class CashTable implements View.OnTouchListener, Runnable {
             // v.setDimensions(40, 40);
             ImageView v = new ImageView(viewGroup.getContext());
             v.setImageResource(items.get(i));
-            v.setMaxWidth(150);
+            v.setMaxWidth((int) (150 * WIDTHSCALER));
             v.setMinimumWidth(1);
-            // v.setScaleX(100);
-            // v.setScaleY(1);
             v.setAdjustViewBounds(true);
             v.setPadding(2, 2, 2, 2);
             v.setOnTouchListener(null);

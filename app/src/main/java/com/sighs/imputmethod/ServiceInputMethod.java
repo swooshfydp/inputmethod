@@ -1,95 +1,72 @@
 package com.sighs.imputmethod;
 
-import android.content.Context;
-import android.graphics.PixelFormat;
+import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
 import android.support.v4.view.ViewPager;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.sighs.imputmethod.CashPager.CashPagerAdapter;
-import com.sighs.imputmethod.CashPager.PagerContainer;
 import com.sighs.imputmethod.CashTable.CashTable;
 import com.sighs.imputmethod.CashTable.OnCashTableUpdate;
-import com.sighs.imputmethod.Overlay.AnalyticsTouchListener;
+import com.sighs.imputmethod.Overlay.TouchAnalytics;
 import com.sighs.imputmethod.models.Currency;
-
-import java.util.HashMap;
 
 /**
  * Created by stuart on 1/16/17.
  */
 
 public class ServiceInputMethod extends InputMethodService implements OnCashTableUpdate {
-    private CashPagerAdapter cashPagerAdapter;
     private ViewPager pagerView=null;
     private CashTable cashTableAdapter;
     private TextView cashValueOutput;
-    private ImageButton acceptButton;
-    private ImageButton cancelButton;
-    private ImageButton clearButton;
-    private ImageButton leftButton;
-    private ImageButton rightButton;
-    private FrameLayout cashTableFrame;
-    PagerContainer mContainer;
-    private WindowManager mWindowManager;
     private InputConnection lastInputConntection = null;
-    private HashMap<Integer, String> history = new HashMap<Integer, String>();
+    private int fieldId = -1;
+    private SharedPreferences settings;
 
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
-        Log.d("SWOSH-InputConnect",
-                String.valueOf(getCurrentInputConnection().equals(lastInputConntection)));
         lastInputConntection = getCurrentInputConnection();
-        Log.d("SWOSH-InputConnect", lastInputConntection.toString());
-        Log.d("SWOSH-InputConnect", String.valueOf(lastInputConntection.hashCode()));
-        if(!history.containsKey(lastInputConntection.hashCode())) {
-
-        }
+        fieldId = getCurrentInputEditorInfo().fieldId;
+        Log.d("SWOSH-InputConnect", String.valueOf(fieldId));
+        // Update Cash table if we have history of this input
+        lastInputConntection.performContextMenuAction(android.R.id.selectAll);
+        String lastValue = (String) lastInputConntection.getSelectedText(0);
+        cashTableAdapter.loadCurrencyCount(settings.getString(String.valueOf(fieldId), ""), lastValue);
         super.onStartInputView(info, restarting);
     }
 
     @Override
     public View onCreateInputView() {
         Log.d("SWOSH-IMS-CreateView", "Creating Input");
+        // Get Preferences for the InputMethod
+        settings = getSharedPreferences(TouchAnalytics.SETTINGS, MODE_PRIVATE);
         // Get the top level layout
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout,
                 null);
         // Define the currency
         Currency[] notes = Currency.loadFromJson("tza.json", layout.getContext());
-        // Tracking user touch points of the entire inputmethod
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                1, 1,
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.BOTTOM;
-        mWindowManager = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
-        LinearLayout dummyView = new LinearLayout(this);
-        dummyView.setOnTouchListener(new AnalyticsTouchListener(this));
+
+        // Get Screen Width
+        DisplayMetrics displayMetrics = new DisplayMetrics();
         WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        wm.addView(dummyView, params);
-        // TODO Layout top level functionality
+        wm.getDefaultDisplay().getMetrics(displayMetrics);
 
         // CashTable Setup
-        cashTableFrame = (FrameLayout) layout.findViewById(R.id.cashTableFrame);
-        cashTableAdapter = new CashTable(cashTableFrame, notes);
+        final FrameLayout cashTableFrame = (FrameLayout) layout.findViewById(R.id.cashTableFrame);
+        cashTableAdapter = new CashTable(cashTableFrame, notes, displayMetrics.widthPixels);
         cashTableAdapter.setUpdateListener(this);
         // Set the Cash Pager
-        cashPagerAdapter = new CashPagerAdapter(this,notes);
+        CashPagerAdapter cashPagerAdapter = new CashPagerAdapter(this, notes);
         cashPagerAdapter.setTableAdapter(cashTableAdapter);
         cashPagerAdapter.setTable(cashTableAdapter.getTable());
         pagerView = (ViewPager) layout.findViewById(R.id.pagerView);
@@ -97,29 +74,32 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         pagerView.setOffscreenPageLimit(cashPagerAdapter.getCount());
         pagerView.setClipChildren(false);
 
-
         // Set the Text Output
         cashValueOutput = (TextView) layout.findViewById(R.id.txtValueOutput);
         // Set the Buttons
-        acceptButton = (ImageButton) layout.findViewById(R.id.btnAccept);
+        ImageButton acceptButton = (ImageButton) layout.findViewById(R.id.btnAccept);
         acceptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Just Close the Keyboard
+                // Save the current config if it isn't 0 and close the keyboard
+                settings.edit().putString(String.valueOf(fieldId), cashTableAdapter.getCurrencyCounts()).apply();
+                // Log the users data
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "Cash Table State", cashTableAdapter.getCurrencyCounts());
                 close();
             }
         });
-        cancelButton = (ImageButton) layout.findViewById(R.id.btnCancel);
+        ImageButton cancelButton = (ImageButton) layout.findViewById(R.id.btnCancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Close the keyboard and undo the last change
                 outputResults("0.00");
+                settings.edit().remove(String.valueOf(fieldId)).apply();
                 cashTableAdapter.clearTable();
                 close();
             }
         });
-        leftButton = (ImageButton) layout.findViewById(R.id.btnLeftArrow);
+        ImageButton leftButton = (ImageButton) layout.findViewById(R.id.btnLeftArrow);
         leftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,7 +107,7 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
                 pagerView.setCurrentItem(curr - 1, true);
             }
         });
-        rightButton = (ImageButton) layout.findViewById(R.id.btnRightArrow);
+        ImageButton rightButton = (ImageButton) layout.findViewById(R.id.btnRightArrow);
         rightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
