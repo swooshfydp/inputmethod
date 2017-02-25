@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">InputMethod</string>
+    <string name="app_name">Cash Keyboard</string>
     <string name="notificationTitle">Oral Calculator</string>
     <string name="notificationText">Click to do something...</string>
     <string name="serviceSettings">Settings</string>
@@ -13,4 +13,20 @@
     <string name="clear">Clear</string>
     <string name="cash_image">cash_image</string>
     <string name="hello">Hello</string>
+    <string name="results_send">Send</string>
+    <string name="cash_keyboard">Cash Keyboard</string>
+    <string name="test_dialog_title">Testing Settings</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="testing_settings">Testing Settings</string>
+    <string name="testing_settings_title">Testing Settings</string>
+    <string name="settings_submit">Submit</string>
+    <string name="submit_task_1">Submit Task 1</string>
+    <string name="task_2">Task 2</string>
+    <string name="submit_task_2">Submit Task 2</string>
+    <string name="task_1">Task 1</string>
+    <string name="task_3">Task 3</string>
+    <string name="submit_task_3">Submit Task 3</string>
+    <string name="reset">Reset</string>
+    <string name="save">Save</string>
 </resources>
