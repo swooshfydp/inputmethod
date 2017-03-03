@@ -84,7 +84,7 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
                 // Save the current config if it isn't 0 and close the keyboard
                 settings.edit().putString(String.valueOf(fieldId), cashTableAdapter.getCurrencyCounts()).apply();
                 // Log the users data
-                TouchAnalytics.WriteMessage(pagerView.getContext(), "Cash Table State", cashTableAdapter.getCurrencyCounts());
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "CashTableState", cashTableAdapter.getCurrencyCounts());
                 close();
             }
         });

@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -27,39 +28,30 @@ public class TouchAnalytics {
     private final static String LOGKEY = "SWOOSH_INPUT_TRACKING";
     private final static String OUTPUT_DIR = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/cashkeyboard/");
 
-    public static void WriteEvent(Context context, MotionEvent event) {
+    public static void WriteEvent(Context context, MotionEvent e) {
         String file = GetParticipant(context);
-        StringBuilder logLine = new StringBuilder();
-        logLine.append(DateFormat.format("yyyyy-mm-dd hh:mm:ss", System.currentTimeMillis()));
-        logLine.append("- x: ");
-        logLine.append(event.getX());
-        logLine.append(" , y: ");
-        logLine.append(event.getY());
-        logLine.append(" => ");
-        logLine.append(event.getAction());
-        Log.d(LOGKEY ,logLine.toString());
+        String logLine = LogWriter.WriteTouchLog(e.getX(), e.getY(), e.getAction());
+        Log.d(LOGKEY , logLine);
         try {
             FileOutputStream fOut = context.openFileOutput(file , Context.MODE_APPEND);
-            logLine.append("\n");
-            fOut.write(logLine.toString().getBytes());
+            logLine += "\n";
+            fOut.write(logLine.getBytes());
             fOut.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception er) {
+            er.printStackTrace();
         }
     }
 
     public static void WriteMessage(Context context, String logkey, String msg) {
         String file = GetParticipant(context);
-        StringBuilder logLine = new StringBuilder();
-        logLine.append(DateFormat.format("yyyyy-mm-dd hh:mm:ss ", System.currentTimeMillis()));
-        logLine.append(logkey);
-        logLine.append(" : ");
-        logLine.append(msg);
-        Log.d(LOGKEY ,logLine.toString());
+        String logLine = "";
+        if(logkey != null) logLine = LogWriter.WriteStateLog(logkey, msg);
+        else logLine = LogWriter.WriteStateLog(msg);
+        Log.d(LOGKEY , logLine);
         try {
             FileOutputStream fOut = context.openFileOutput(file , Context.MODE_APPEND);
-            logLine.append("\n");
-            fOut.write(logLine.toString().getBytes());
+            logLine += "\n";
+            fOut.write(logLine.getBytes());
             fOut.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,6 +62,7 @@ public class TouchAnalytics {
         String file = GetParticipant(context);
         context.deleteFile(file);
         Log.d(LOGKEY ,"Deleting: " + file);
+        Toast.makeText(context, "Deleting: " + file, Toast.LENGTH_SHORT).show();
     }
 
     public static void ArchiveLog(Context context, String source, String dest) {
@@ -103,6 +96,7 @@ public class TouchAnalytics {
             // Add folder to the zip file
             zipFile.addFile(file, parameters);
             Log.d(LOGKEY ,"Archiving: " + source + " to " + dest);
+            Toast.makeText(context, "Archiving: " + source + " to " + dest, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
         }

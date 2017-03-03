@@ -18,6 +18,9 @@ import com.sighs.imputmethod.utils.ArchiverClickListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     final Context context = this;
+    private Button btnTask1;
+    private Button btnTask2;
+    private Button btnTask3;
     private EditText txtTask1;
     private EditText txtTask2;
     private EditText txtTask3;
@@ -48,9 +51,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Add Button Behaviour
         Button btnReset = (Button) findViewById(R.id.reset);
-        Button btnTask1 = (Button) findViewById(R.id.save_results_task_1);
-        Button btnTask2 = (Button) findViewById(R.id.save_results_task_2);
-        Button btnTask3 = (Button) findViewById(R.id.save_results_task_3);
+        btnTask1 = (Button) findViewById(R.id.save_results_task_1);
+        btnTask2 = (Button) findViewById(R.id.save_results_task_2);
+        btnTask3 = (Button) findViewById(R.id.save_results_task_3);
         btnSave = (Button) findViewById(R.id.save_participant_id);
 
         btnTask1.setOnClickListener(new ArchiverClickListener(this, "Task1"));
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                TouchAnalytics.ClearLog(getApplicationContext());
                 TouchAnalytics.SetParticipant(getApplicationContext(),
                         String.valueOf(participantId.getText()));
                 toggleTest(true);
@@ -78,13 +82,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         participantId.setEnabled(!enable);
         btnSave.setEnabled(!enable);
         txtTask1.setEnabled(enable);
+        btnTask1.setEnabled(enable);
         txtTask2.setEnabled(enable);
+        btnTask2.setEnabled(enable);
         txtTask3.setEnabled(enable);
+        btnTask3.setEnabled(enable);
     }
 
     @Override
     public void onClick(View view) {
         ClearFields();
         toggleTest(false);
+        TouchAnalytics.ClearLog(this);
     }
 }

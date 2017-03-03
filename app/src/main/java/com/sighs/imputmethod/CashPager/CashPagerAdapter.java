@@ -21,7 +21,7 @@ import com.sighs.imputmethod.customviews.OnDropEventListener;
 import com.sighs.imputmethod.models.Coordinates;
 import com.sighs.imputmethod.models.Currency;
 
-public class CashPagerAdapter extends PagerAdapter implements OnDropEventListener, View.OnClickListener  {
+public class CashPagerAdapter extends PagerAdapter implements View.OnClickListener  {
 
     private final static String LOGKEY = "SWOOSH_INPUT";
 
@@ -52,19 +52,6 @@ public class CashPagerAdapter extends PagerAdapter implements OnDropEventListene
         return itemView;
     }
 
-
-    @Override
-    public void onItemDrop(View view, Coordinates c) {
-        Coordinates tableCoor = new Coordinates((int) table.getX(), (int) table.getY(),
-                table.getWidth(), table.getHeight());
-        if(this.tableAdapter != null) {
-            if(tableCoor.contains(c)) {
-                int res = (int) view.getTag();
-                tableAdapter.updateCashGrid((String) view.getTag(), 1);
-            }
-        }
-    }
-
     public void setTable(View table) {
         this.table = table;
     }
@@ -72,8 +59,6 @@ public class CashPagerAdapter extends PagerAdapter implements OnDropEventListene
     public void setTableAdapter(CashTable adapter) {
         this.tableAdapter = adapter;
     }
-
-
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {

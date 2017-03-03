@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 
+import com.sighs.imputmethod.Overlay.TouchAnalytics;
 import com.sighs.imputmethod.R;
 import com.sighs.imputmethod.customviews.LockableHorizontalScrollView;
 import com.sighs.imputmethod.models.Currency;
@@ -55,6 +56,9 @@ public class CashTable implements View.OnTouchListener, Runnable {
         this.scrollView = (LockableHorizontalScrollView) layout.findViewById(R.id.horizontalScroll);
         this.trashIcon = layout.findViewById(R.id.btnClear);
         this.trashIcon.setPadding(10, 10, 10, 10);
+        this.trashIcon.setMinimumWidth((int) (75 * WIDTHSCALER));
+        this.trashIcon.setMinimumHeight((int) (75 * WIDTHSCALER));
+        this.trashIcon.setBackgroundColor(0x00000000);
         this.trashIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -202,10 +206,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
                 lastTouch = MotionEvent.ACTION_UP;
                 return true;
         }
-        Log.d(LOGKEY, "Raw (" + motionEvent.getRawX() + ", " + motionEvent.getRawY() + ") - Normal (" +
-                motionEvent.getX() + ", " + motionEvent.getY() + ") - Size (" +
-                this.dragImage.getWidth() + ", " + this.dragImage.getHeight() + ") - Coords. (" +
-                this.dragImage.getX() + ", " + this.dragImage.getY() + ") - Action: " + lastTouch);
+        TouchAnalytics.WriteEvent(this.table.getContext(), motionEvent);
         return false;
     }
 
