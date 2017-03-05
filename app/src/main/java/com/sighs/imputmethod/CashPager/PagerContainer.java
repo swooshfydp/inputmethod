@@ -94,9 +94,9 @@ public class PagerContainer extends FrameLayout implements ViewPager.OnPageChang
 
     @Override
     public void onPageSelected(int position) {
-        settings = this.getContext().getSharedPreferences("cashkeyboard", Context.MODE_APPEND);
         TouchAnalytics.WriteMessage(this.getContext(), "PageChanged",
-                "Current Position: " + position);
+                "" + position);
+
     }
 
     @Override

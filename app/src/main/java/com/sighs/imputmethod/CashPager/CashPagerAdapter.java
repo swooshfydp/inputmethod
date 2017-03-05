@@ -47,8 +47,8 @@ public class CashPagerAdapter extends PagerAdapter implements View.OnClickListen
         imageView.setScaleX(0.8f);
         imageView.setScaleY(0.8f);
         imageView.setOnClickListener(this);
+        imageView.setTag(position + "|" + mNotes[position].getId());
         container.addView(itemView);
-        imageView.setTag(mNotes[position].getId());
         return itemView;
     }
 
@@ -77,7 +77,9 @@ public class CashPagerAdapter extends PagerAdapter implements View.OnClickListen
 
     @Override
     public void onClick(View view) {
-        tableAdapter.updateCashGrid((String) view.getTag(), 1);
+        String tag = (String) view.getTag();
+        tableAdapter.focusOnView(Integer.parseInt(tag.split("\\|")[0]));
+        tableAdapter.updateCashGrid(tag.split("\\|")[1], 1);
     }
 
 }

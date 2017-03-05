@@ -1,10 +1,12 @@
 package com.sighs.imputmethod;
 
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.inputmethodservice.InputMethodService;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -41,7 +43,9 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         // Update Cash table if we have history of this input
         lastInputConntection.performContextMenuAction(android.R.id.selectAll);
         String lastValue = (String) lastInputConntection.getSelectedText(0);
+        cashTableAdapter.scaleLists();
         cashTableAdapter.loadCurrencyCount(settings.getString(String.valueOf(fieldId), ""), lastValue);
+        TouchAnalytics.WriteMessage(this, "KeyboardOpen", "True");
         super.onStartInputView(info, restarting);
     }
 
@@ -54,6 +58,7 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.keyboard_layout,
                 null);
         // Define the currency
+        // TODO: Add mechanism to change this string
         Currency[] notes = Currency.loadFromJson("tza.json", layout.getContext());
 
         // Get Screen Width
@@ -81,10 +86,14 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         acceptButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Log that the keyboard is closed
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "KeyboardOpen", "False");
                 // Save the current config if it isn't 0 and close the keyboard
                 settings.edit().putString(String.valueOf(fieldId), cashTableAdapter.getCurrencyCounts()).apply();
                 // Log the users data
                 TouchAnalytics.WriteMessage(pagerView.getContext(), "CashTableState", cashTableAdapter.getCurrencyCounts());
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "ScreenHeight",  ""+view.getRootView().getWidth());
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "ScreenWidth", ""+view.getRootView().getHeight());
                 close();
             }
         });
@@ -92,10 +101,15 @@ public class ServiceInputMethod extends InputMethodService implements OnCashTabl
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Log that the keyboard is closed
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "KeyboardOpen", "False");
                 // Close the keyboard and undo the last change
-                outputResults("0.00");
+                outputResults("0");
+                // Clear the table history of the field
                 settings.edit().remove(String.valueOf(fieldId)).apply();
                 cashTableAdapter.clearTable();
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "ScreenWidth",  ""+view.getRootView().getWidth());
+                TouchAnalytics.WriteMessage(pagerView.getContext(), "ScreenHeight", ""+view.getRootView().getHeight());
                 close();
             }
         });

@@ -30,7 +30,7 @@ public class TouchAnalytics {
 
     public static void WriteEvent(Context context, MotionEvent e) {
         String file = GetParticipant(context);
-        String logLine = LogWriter.WriteTouchLog(e.getX(), e.getY(), e.getAction());
+        String logLine = LogWriter.WriteTouchLog(e.getRawX(), e.getRawY(), e.getAction());
         Log.d(LOGKEY , logLine);
         try {
             FileOutputStream fOut = context.openFileOutput(file , Context.MODE_APPEND);

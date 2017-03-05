@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -26,6 +27,7 @@ import com.sighs.imputmethod.models.Currency;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by stuart on 2/6/17.
@@ -70,6 +72,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
             ColumnItem item = new CashTable.ColumnItem(table.getContext(), currency);
             ListView list = new ListView(this.table.getContext());
             list.setPadding(10, 10, 10, 10);
+            // (int)(150 * WIDTHSCALER);
             list.setAdapter(item.getAdaptor());
             list.setTag(currency.getId());
             list.setOnTouchListener(this);
@@ -80,13 +83,20 @@ public class CashTable implements View.OnTouchListener, Runnable {
         this.table.addView(tableRow);
     }
 
+    public void scaleLists() {
+        for(ColumnItem item : cashValues.values()) {
+            item.getView().setMinimumWidth((int)(150 * WIDTHSCALER));
+            item.getView().getLayoutParams().width = (int)(150 * WIDTHSCALER);
+        }
+    }
+
     public TableLayout getTable() {
         return this.table;
     }
 
     public String getCurrencyCounts() {
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("%.2f", (float) updateTotals()));
+        builder.append(String.format("%d", (int) updateTotals()));
         builder.append("|");
         for(String k : cashValues.keySet()) {
             builder.append(k);
@@ -97,6 +107,25 @@ public class CashTable implements View.OnTouchListener, Runnable {
         // builder.append("\n");
         return builder.toString();
     }
+
+    public void focusOnView(int id){
+        this.scrollView.post(new ScrollProcess(this.scrollView, id));
+    }
+
+    private class ScrollProcess implements Runnable {
+        private int id;
+        private LockableHorizontalScrollView view;
+        ScrollProcess(LockableHorizontalScrollView view, int id) {
+            this.view = view;
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            this.view.scrollTo((int) (this.id * 150 * WIDTHSCALER), 0);
+        }
+    }
+
 
     public void loadCurrencyCount(String record, String lastValue) {
         if (record.equals("")) {
@@ -114,7 +143,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
             cashValues.get(rec.split(":")[0]).UpdateStack();
         }
         float total = updateTotals();
-        updateListener.OnTotalUpdate(String.format("%.2f", total));
+        updateListener.OnTotalUpdate(String.format("%d", (int) total));
     }
 
     public void updateCashGrid(String key, int val) {
@@ -125,12 +154,12 @@ public class CashTable implements View.OnTouchListener, Runnable {
             value.getAdaptor().notifyDataSetChanged();
             float total = updateTotals();
             Log.d(LOGKEY, "Current Total: " + total);
-            if(updateListener != null) updateListener.OnTotalUpdate(String.format("%.2f", total));
+            if(updateListener != null) updateListener.OnTotalUpdate(String.format("%d", (int) total));
         }
     }
 
-    public int updateTotals() {
-        int total = 0;
+    public float updateTotals() {
+        float total = 0;
         for (CashTable.ColumnItem item: cashValues.values()) {
             total += item.getTotal();
         }
@@ -142,7 +171,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
             item.clear();
         }
         float total = updateTotals();
-        updateListener.OnTotalUpdate(String.format("%.2f", total));
+        updateListener.OnTotalUpdate(String.format("%d", (int) total));
     }
 
     public OnCashTableUpdate getUpdateListener() {
@@ -250,7 +279,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
             this.count += amount;
             ArrayList list = new ArrayList<Integer>();
             int stack = this.count;
-            if (this.count <= this.StackCount) {
+            if (this.count <= this.StackCount - 1) {
                 while (stack > 0) {
                     list.add(this.currency.getBaseImage());
                     stack--;
@@ -258,7 +287,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
             } else {
                 while (stack > 0) {
                     int rem = this.StackCount;
-                    if (stack < this.StackCount) rem = stack % this.StackCount;
+                    if (stack < this.StackCount - 1) rem = stack % this.StackCount;
                     list.add(this.currency.getImageSrc(rem));
                     stack -= this.StackCount;
                 }
@@ -270,7 +299,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
         public void UpdateStack() {
             ArrayList list = new ArrayList<Integer>();
             int stack = this.count;
-            if (this.count <= this.StackCount) {
+            if (this.count <= this.StackCount - 1) {
                 while (stack > 0) {
                     list.add(this.currency.getBaseImage());
                     stack--;
@@ -278,7 +307,7 @@ public class CashTable implements View.OnTouchListener, Runnable {
             } else {
                 while (stack > 0) {
                     int rem = this.StackCount;
-                    if (stack < this.StackCount) rem = stack % this.StackCount;
+                    if (stack < this.StackCount - 1) rem = stack % this.StackCount;
                     list.add(this.currency.getImageSrc(rem));
                     stack -= this.StackCount;
                 }
